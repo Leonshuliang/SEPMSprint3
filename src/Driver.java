@@ -1,4 +1,11 @@
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -6,44 +13,33 @@ import java.util.Scanner;
 
 public class Driver {
 
-	private List<Session> listSession = new ArrayList<Session>();
+	private List<String[]> listSession = new ArrayList<String[]>();
 	private List<Booking> listBooking = new ArrayList<Booking>();
+	private Verify verify = null;
 
-	public boolean inputInfo() {
-		Verify ver = new Verify();
-		String userName;
-		String passWord;
-		sc = new Scanner(System.in);
-		System.out.println(" Welcome to jMoSS !! Please enter your identity information");
-		System.out.println("===================================");
-		System.out.println("Please input your UserName");
-		userName = sc.nextLine();
-		System.out.println("Please input your PassWord");
-		passWord = sc.nextLine();
-		System.out.println(userName);
-		return ver.checkIDandPsw(userName, passWord);
-		
-		
-	}
-	public void putSessions() {
+	public void putSessions() throws FileNotFoundException {
 		/**
-		 * p1- p7 is instance of adult storage in listAdult
+		 * s1-s5 are instance session
 		 */
-		Session s1 = new Session(1, "Gone With the Wind  ", "11:00 am", "2 hours");
-		Session s2 = new Session(2, "Jaws                ", "1:00 pm", "2 hours");
-		Session s3 = new Session(3, "The Ten Commandments", "3:00 pm", "2 hours");
-		Session s4 = new Session(4, "Doctor Zhivago      ", "5:00 pm", "2 hours");
-		Session s5 = new Session(5, "The Sound of Music  ", "7:00 pm", "2 hours");
+		FileReader reader = null;
+		try {
+			reader = new FileReader("./src/Session.txt");
+			BufferedReader br = new BufferedReader(reader);
 
-		/**
-		 * p10 is instance of baby storage in listBaby
-		 */
+			String eachLine = null;
+			while ((eachLine = br.readLine()) != null) {
 
-		listSession.add(s1);
-		listSession.add(s2);
-		listSession.add(s3);
-		listSession.add(s4);
-		listSession.add(s5);
+				String[] temp = eachLine.split(",");
+				/**
+				 * put all sessions in session list
+				 */
+				listSession.add(temp);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
 	// book a session
@@ -51,33 +47,76 @@ public class Driver {
 	private Scanner sc;
 
 	public void bookSession() {
-		// int locationNo;
 
-		int sessionID;
-		String sessionStr;
-		String locationStr;
-		String email;
+		int sessionID; // ID of session stored in list
+		String locationStr;// cinema location
+		String email, conFirm;// customers email and booking confirmation message
+
 		Menu m = new Menu();// instance of menu
-		m.locationMenu();
+		verify = new Verify();
+		/*
+		 * get all information to add a booking emial and id all have regex to check if
+		 * they are valid
+		 */
+		locationMenu();
 		Scanner sc = new Scanner(System.in);
 		System.out.println("Enter the location you want to book");
 		locationStr = sc.nextLine();
-
+		// location only can be English letters
+		locationStr = verify.nameRegex(locationStr);
 		System.out.println("Enter custom's email");
 		email = sc.nextLine();
-		// locationNo = Integer.parseInt(locationStr);
+		// check email is valid or not emial must be XXX@XXX.XXX
+		email = verify.emailRegex(email);
 		showAllSessions();
-		System.out.println("Enter the session you want to book");
-		sessionStr = sc.nextLine();
-		sessionID = Integer.parseInt(sessionStr);
-		Iterator<Session> it = listSession.iterator();//
-		while (it.hasNext()) {
-			Session s = it.next();
-			if (sessionID == s.getSessionID()) {
-				Booking b = new Booking(bookID, email, locationStr, s.getMovieName(), s.getTime(), s.getDuration());
-				listBooking.add(b);
-				bookID++;
+		System.out.println("Enter the session ID you want to book");
+		sessionID = verify.menuRegex(1, 5);
+
+		System.out.println("*******Confirm to make this booking*********" + "\n" + "*******enter'Y'--YES*********\n"
+				+ "*******enter'N'--NO**********");
+		conFirm = sc.nextLine();
+
+		if (conFirm.equals("Y")) {
+			Iterator<String[]> it = listSession.iterator();// interator of session list
+			while (it.hasNext()) {
+				String[] s = it.next();
+				if (sessionID == Integer.parseInt(s[0])) {
+					Booking b = new Booking(bookID, email, locationStr, s[1], s[2], s[3]);
+					listBooking.add(b);
+					System.out.println("***********Booking successful************");
+					bookID++;
+				} else {
+					break;
+				}
 			}
+			putIntoFile();
+		}
+
+	}
+
+	// write all bookings into file
+	public void putIntoFile() {
+		//find file booking
+		File writename = new File("./src/booking.txt");
+		BufferedWriter out = null;
+
+		try {
+			writename.createNewFile();
+			//if without this file, jMoSS will creat a new file named as booking
+			out = new BufferedWriter(new FileWriter(writename, true));
+			Iterator<Booking> it = listBooking.iterator();
+			while (it.hasNext()) {
+				Booking p = it.next();
+				//write all informations in list into file
+				out.write(p.getBookingID() + "," + p.getEmail() + "," + p.getSurburb() + "," + p.getMovieName() + ","
+						+ p.getTime() + "," + p.getDuration()+"\n");
+				out.flush();
+				
+				out.close();
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 	}
@@ -86,15 +125,15 @@ public class Driver {
 	public void showAllSessions() {
 		System.out.println("SessionID\t\t" + "MovieName\t\t" + "Time\t\t" + "Durations" + "\n");
 
-		Iterator<Session> it = listSession.iterator();//
+		Iterator<String[]> it = listSession.iterator();//
 		while (it.hasNext()) {
-			Session p = it.next();
-			System.out.println(p.getSessionID() + "\t\t" + p.getMovieName() + "\t\t" + p.getTime() + "\t\t"
-					+ p.getDuration() + "\t\t");
+			// Session p = it.next();
+			String[] s = it.next();
+			System.out.println(s[0] + "\t\t" + s[1] + "\t\t" + s[2] + "\t\t" + s[3] + "\t\t");
 		}
 	}
 
-	//
+	// List all the bookings if without any booking still list the titles
 	public void listAllBookings() {
 		System.out.println(
 				"BookingID\t\t" + "Email\t\t" + "Surburb\t\t" + "MovieName\t\t" + "Time\t\t" + "Durations" + "\n");
@@ -107,38 +146,120 @@ public class Driver {
 		}
 	}
 
-	public void searchSession() {
-		// OptionNoRegex reg=new OptionNoRegex();
-		System.out.println("Enter the Movie name you want to search");
-		Scanner sc = new Scanner(System.in);
-		String movieName = sc.nextLine();
-		// gender=reg.sexRegex(gender);
-		Iterator<Session> it = listSession.iterator();// 
-		while (it.hasNext()) {
-			Session p = it.next();
-			if (movieName.equals(p.getMovieName().trim())) 
-			{
-			    System.out.print(p.getMovieName()+ ""+ movieName);
-				System.out.println(p.getSessionID() + "\t\t" + p.getMovieName() + "\t\t" + p.getTime() + "\t\t"
-						+ p.getDuration() + "\t\t");
+	/*
+	 * *search a booking by name if there is not any booking in systerm will get
+	 * reminder
+	 */
+	public void searchBooking() {
+		int sizeBooking = listBooking.size();
+		verify = new Verify();
+		if (sizeBooking < 1) {
+			System.out.println("**************You have no any booking yet.*********************\n");
+
+		} else {
+			System.out.println("*******************************************************\n"
+					+ "**********Enter the EMail you want to search***********\n"
+					+ "*******************************************************");
+			Scanner sc = new Scanner(System.in);
+			String bookingEmail = sc.nextLine();
+			bookingEmail = verify.emailRegex(bookingEmail);
+			// interaator of booking list
+			Iterator<Booking> it = listBooking.iterator();//
+			while (it.hasNext()) {
+				Booking p = it.next();
+				if (bookingEmail.equals(p.getEmail().trim())) {
+					System.out.println("BookingID\t\t" + "Email\t\t" + "Surburb\t\t" + "MovieName\t\t" + "Time\t\t"
+							+ "Durations" + "\n");
+					System.out.println(p.getBookingID() + "\t\t" + p.getEmail() + "\t\t" + p.getMovieName() + "\t\t"
+							+ p.getTime() + "\t\t" + p.getDuration());
+				}
 			}
 		}
 	}
-	
-	public void deleteBooking() {
-			  System.out.println("Enter the ID  of the booking you want to delete：");
-			  Scanner sc=new Scanner(System.in);
-			  int bookingID=Integer.parseInt(sc.nextLine()); //
-			  Iterator<Booking> it=listBooking.iterator();//
-			  while(it.hasNext())
-			  {
-			   Booking p=it.next();
-			    if(bookingID==p.getBookingID()){
-			     listBooking.remove(p);
-			     System.out.println("DeleteSuccess");
-			    }
-			    }
-			  
-			 
+
+	// search a session by session name
+	public void searchSession() {
+		Verify verify = new Verify();
+		System.out.println("*******************************************************\n"
+				+ "**********Enter the movie name you want to search******\n"
+				+ "*******************************************************");
+		Scanner sc = new Scanner(System.in);
+		String movieName = sc.nextLine();
+		movieName = verify.nameRegex(movieName);// check the validation of movie name
+		Iterator<String[]> it = listSession.iterator();// get iterator of the list of session
+		while (it.hasNext()) {
+			// Session p = it.next();
+			String[] s = it.next();
+			if (movieName.equals(s[1].trim())) {
+				System.out.println("SessionID\t\t" + "MovieName\t\t" + "Time\t\t" + "Durations" + "\n");
+				System.out.println(s[0] + "\t\t" + s[1] + "\t\t" + s[2] + "\t\t" + s[3] + "\t\t");
+			}
+		}
+	}
+
+	// delete a booking by booking ID, if whout anybookng will get message from this
+	// systerm
+	public void deleteBooking() 
+	{
+		int sizeBooking = listBooking.size();
+		if (sizeBooking < 1) {
+			System.out.println("**************You have no any booking yet.*********************\n");
+
+		} else {
+			verify = new Verify();
+			System.out.println("**************************************************************\n"
+					+ "**********Enter the ID of the booking you want to delete******\n"
+					+ "*************************************************************");
+
+			Scanner sc = new Scanner(System.in);
+			String bookingIDStr = sc.nextLine();
+			verify.numberCheck(bookingIDStr);// check is it valid number or not
+			int bookingID = Integer.parseInt(bookingIDStr);// get booking id
+			Iterator<Booking> it = listBooking.iterator();// get iterator of booking list
+			while (it.hasNext()) {
+				Booking p = it.next();
+				if (bookingID == p.getBookingID()) {
+					listBooking.remove(p);
+
+					System.out.println("DeleteSuccess");
+					break;
+				}
+			}
+
+		}
+	}
+	//exit whole system
+	public void exitSystem()
+	{
+		System.out.println("**************ARE YOU SURE YOU WANT TO LOG OUT*********************\n");
+		System.out.println("*******Confirm to EXIT *********" + "\n" + "*******enter'Y'--YES*********\n"
+				+ "*******enter'N'--NO**********");
+		Scanner sc = new Scanner(System.in);
+		String conFirm = sc.nextLine();
+        conFirm=sc.nextLine();
+		if (conFirm.equals("Y")) 
+		{
+			System.out.println("******LOG OUT******\n");	
+			System.exit(0);
+		   
+		}
+		
+	}
+	public void locationMenu()
+	{
+		FileReader reader = null;
+		try {
+			reader = new FileReader("./src/location.txt");
+			BufferedReader br = new BufferedReader(reader);
+
+			String eachLine = null;
+			while ((eachLine = br.readLine()) != null) {
+
+				System.out.println(eachLine);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

@@ -1,0 +1,8 @@
+Select cinema theater location from the folowing options
+===================================
+1.St Kilda
+2.Fitzroy
+3.Melbourne CBD
+4.Sunshine
+5.Lilydale
+===================================

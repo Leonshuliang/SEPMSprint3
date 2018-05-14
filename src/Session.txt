@@ -1,0 +1,5 @@
+1,Gone With the Wind  , 11:00 am,2 hours
+2,Jaws                , 1:00 pm ,2 hours
+3,The Ten Commandments, 3:00 pm ,2 hours
+4,Doctor Zhivago      , 5:00 pm ,2 hours
+5,The Sound of Music  , 7:00 pm ,2 hours
