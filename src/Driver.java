@@ -16,12 +16,13 @@ public class Driver {
 	private List<String[]> listSession = new ArrayList<String[]>();
 	private List<Booking> listBooking = new ArrayList<Booking>();
 	private Verify verify = null;
+	FileReader reader = null;
 
 	public void putSessions() throws FileNotFoundException {
 		/**
 		 * s1-s5 are instance session
 		 */
-		FileReader reader = null;
+
 		try {
 			reader = new FileReader("./src/Session.txt");
 			BufferedReader br = new BufferedReader(reader);
@@ -34,6 +35,7 @@ public class Driver {
 				 * put all sessions in session list
 				 */
 				listSession.add(temp);
+
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -78,14 +80,15 @@ public class Driver {
 
 		if (conFirm.equals("Y")) {
 			Iterator<String[]> it = listSession.iterator();// interator of session list
+
 			while (it.hasNext()) {
+
 				String[] s = it.next();
 				if (sessionID == Integer.parseInt(s[0])) {
 					Booking b = new Booking(bookID, email, locationStr, s[1], s[2], s[3]);
 					listBooking.add(b);
 					System.out.println("***********Booking successful************");
 					bookID++;
-				} else {
 					break;
 				}
 			}
@@ -96,23 +99,22 @@ public class Driver {
 
 	// write all bookings into file
 	public void putIntoFile() {
-		//find file booking
+		// find file booking
 		File writename = new File("./src/booking.txt");
 		BufferedWriter out = null;
 
 		try {
 			writename.createNewFile();
-			//if without this file, jMoSS will creat a new file named as booking
+			// if without this file, jMoSS will creat a new file named as booking
 			out = new BufferedWriter(new FileWriter(writename, true));
 			Iterator<Booking> it = listBooking.iterator();
 			while (it.hasNext()) {
 				Booking p = it.next();
-				//write all informations in list into file
+				// write all informations in list into file
 				out.write(p.getBookingID() + "," + p.getEmail() + "," + p.getSurburb() + "," + p.getMovieName() + ","
-						+ p.getTime() + "," + p.getDuration()+"\n");
+						+ p.getTime() + "," + p.getDuration() + "\n");
 				out.flush();
-				
-				out.close();
+
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -180,6 +182,7 @@ public class Driver {
 	// search a session by session name
 	public void searchSession() {
 		Verify verify = new Verify();
+		int count = 0;
 		System.out.println("*******************************************************\n"
 				+ "**********Enter the movie name you want to search******\n"
 				+ "*******************************************************");
@@ -190,17 +193,23 @@ public class Driver {
 		while (it.hasNext()) {
 			// Session p = it.next();
 			String[] s = it.next();
-			if (movieName.equals(s[1].trim())) {
+			if (movieName.equalsIgnoreCase(s[1].trim())) {
+
 				System.out.println("SessionID\t\t" + "MovieName\t\t" + "Time\t\t" + "Durations" + "\n");
 				System.out.println(s[0] + "\t\t" + s[1] + "\t\t" + s[2] + "\t\t" + s[3] + "\t\t");
+				count = 1;
 			}
+
+		}
+		if (count == 0) {
+			System.out.println("=============Cant find the movie you want to search===================");
+			return;
 		}
 	}
 
 	// delete a booking by booking ID, if whout anybookng will get message from this
 	// systerm
-	public void deleteBooking() 
-	{
+	public void deleteBooking() {
 		int sizeBooking = listBooking.size();
 		if (sizeBooking < 1) {
 			System.out.println("**************You have no any booking yet.*********************\n");
@@ -215,39 +224,46 @@ public class Driver {
 			String bookingIDStr = sc.nextLine();
 			verify.numberCheck(bookingIDStr);// check is it valid number or not
 			int bookingID = Integer.parseInt(bookingIDStr);// get booking id
-			Iterator<Booking> it = listBooking.iterator();// get iterator of booking list
-			while (it.hasNext()) {
-				Booking p = it.next();
-				if (bookingID == p.getBookingID()) {
-					listBooking.remove(p);
+			System.out.println("*******Confirm to make this booking*********" + "\n" + "*******enter'Y'--YES*********\n"
+					+ "*******enter'N'--NO**********");
+			String conDel = sc.nextLine();
 
-					System.out.println("DeleteSuccess");
-					break;
+			if (conDel.equals("Y")) {
+				Iterator<Booking> it = listBooking.iterator();// get iterator of booking list
+				while (it.hasNext()) {
+					Booking p = it.next();
+					if (bookingID == p.getBookingID()) {
+						listBooking.remove(p);
+
+						System.out.println("-------------DeleteSuccess-----------------");
+						break;
+					}
 				}
+			} else if (conDel.equals("N")) {
+				return;
 			}
 
 		}
 	}
-	//exit whole system
-	public void exitSystem()
-	{
+
+	// exit whole system
+	public void exitSystem() {
 		System.out.println("**************ARE YOU SURE YOU WANT TO LOG OUT*********************\n");
 		System.out.println("*******Confirm to EXIT *********" + "\n" + "*******enter'Y'--YES*********\n"
 				+ "*******enter'N'--NO**********");
 		Scanner sc = new Scanner(System.in);
 		String conFirm = sc.nextLine();
-        conFirm=sc.nextLine();
-		if (conFirm.equals("Y")) 
-		{
-			System.out.println("******LOG OUT******\n");	
+		conFirm = sc.nextLine();
+		if (conFirm.equals("Y")) {
+			System.out.println("******LOG OUT******\n");
 			System.exit(0);
-		   
+
 		}
-		
+
 	}
-	public void locationMenu()
-	{
-		FileReader reader = null;
+
+	public void locationMenu() {
+		// FileReader reader = null;
 		try {
 			reader = new FileReader("./src/location.txt");
 			BufferedReader br = new BufferedReader(reader);

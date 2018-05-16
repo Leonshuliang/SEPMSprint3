@@ -8,9 +8,12 @@ import java.util.Scanner;
 
 public class Verify {
 	// verify the option number
-	private String uName;
-	private String pWord;
-
+	private String uName;//user name
+	private String pWord;//password when log in 
+	
+	Driver driver = new Driver();
+	Menu m = new Menu();
+	
 	public int menuRegex(int min, int max) {
 		String regex = "[0-9]{1}";// menu is only one-digit between 1-9
 		Scanner sc = new Scanner(System.in);
@@ -41,7 +44,7 @@ public class Verify {
 			if (str.matches(pattern)) {
 				return str;
 			} else {
-				System.out.println("Please enput again");
+				System.out.println("Please input again");
 				str = sc.nextLine();
 				continue;
 			}
@@ -58,7 +61,7 @@ public class Verify {
 			if (str.matches(pattern)) {
 				return str;
 			} else {
-				System.out.println("Invalid enput,Please enter again");
+				System.out.println("Invalid input,Please enter again");
 				str = sc.nextLine();
 				continue;
 			}
@@ -76,7 +79,7 @@ public class Verify {
 			if (str.matches(pattern)) {
 				return str;
 			} else {
-				System.out.println("Invalid enput,Please enter again");
+				System.out.println("Invalid input,Please enter again");
 				str = sc.nextLine();
 				continue;
 			}
@@ -88,7 +91,7 @@ public class Verify {
 
 		File file = new File("./src/user.txt");
 		if (file.exists() == false) {
-			System.out.println("cannot find file");
+			System.out.println("can not find file");
 			return;
 		}
 		try {
@@ -132,8 +135,6 @@ public class Verify {
 
 	// this method will be called by main method to start the system.
 	public void startPage() {
-		Driver driver = new Driver();
-		Menu m = new Menu();
 		// put all sessions in jMoSS
 		try {
 			driver.putSessions();
@@ -156,16 +157,16 @@ public class Verify {
 				driver.searchSession();// search a session by name
 				break;
 			case 4:
-				driver.deleteBooking();// add a person
+				driver.deleteBooking();// add a booking
 				break;
 			case 5:
 				driver.listAllBookings();// list all bookings
 				break;
 			case 6:
-				driver.searchBooking();// list all bookings
+				driver.searchBooking();// search a  bookings
 				break;
 			case 7:
-				// System.exit(0);// exit this system
+				
 				driver.exitSystem();
 				System.exit(0);
 				break;
@@ -190,7 +191,7 @@ public class Verify {
 		for (int i = 0; i < 3; i++) {
 			System.out.println("*******************************************************\n"
 					+ "******************Welcome to jMoSS !! *****************\n"
-					+ "**********Please enter your identity information*******\n"
+					+ "**********Please inter your identity information*******\n"
 					+ "*******************************************************");
 			System.out.println("=======================================================");
 			System.out.println("===========Please input your UserName==================");
